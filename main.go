@@ -11,6 +11,8 @@ import (
 func main() {
 
 	scenario := flag.String("scn", "", "Scenario")
+	help := flag.Bool("h", false, "Show usage")
+
 	flag.Parse()
 	if len(*scenario) == 0 {
 		showUsage()
@@ -19,6 +21,10 @@ func main() {
 	switch *scenario {
 	case scenarios.ScenarioOvpnGenName:
 		var s = new(scenarios.OvpngenImpl)
+		if *help {
+			s.ShowUsage()
+			return
+		}
 		s.Execute()
 	case scenarios.ScenarioEasyRsaName:
 		var s = new(scenarios.EasyRsaScenarioImpl)
