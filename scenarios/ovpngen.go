@@ -17,7 +17,6 @@ type OvpngenImpl struct {
 }
 
 const (
-	RHelpStr           string = "openvpn config root path"
 	SHelpStr           string = "server's host"
 	PHelpStr           string = "server's port"
 	CertPathHelpStr    string = "user's .crt file (inside root)"
@@ -56,7 +55,7 @@ func (s *OvpngenImpl) Execute() {
 		return
 	}
 
-	root := flag.String("r", "", RHelpStr)
+	root := flag.String("r", "", common.RHelpStr)
 	host := flag.String("s", "", SHelpStr)
 	port := flag.String("p", "", PHelpStr)
 	certPath := flag.String("c", "", CertPathHelpStr)
@@ -103,7 +102,7 @@ ovpngen -scn %s -r /etc/openvpn -c easy-rsa/pki/issued/user.crt -k easy-rsa/pki/
 	fmt.Printf(
 		optionsTemplate,
 		filepath.Base(exe),
-		RHelpStr,
+		common.RHelpStr,
 		SHelpStr,
 		PHelpStr,
 		CertPathHelpStr,
