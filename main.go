@@ -8,8 +8,6 @@ import (
 	"github.com/dv4mp1r3/ovpngen/scenarios"
 )
 
-const ()
-
 func main() {
 
 	scenario := flag.String("scn", "", "Scenario")
@@ -24,10 +22,10 @@ func main() {
 		),
 	)
 	certName := flag.String("n", "", "Certificate name")
-
-	fmt.Println(fmt.Sprint("%s %s", certType, certName))
-
+	cP := flag.String("cp", "", common.CaPwd)
+	sP := flag.String("sp", "", common.ServerPwd)
 	flag.Parse()
+
 	if len(*scenario) == 0 {
 		showUsage()
 		return
@@ -44,6 +42,12 @@ func main() {
 		var s = new(scenarios.EasyRsaScenarioImpl)
 		s.CertName = *certName
 		s.CertType = *certType
+		s.CaPwd = cP
+		s.CertPwd = sP
+		if s.CertName == "" {
+			fmt.Println("Certificate name can not be empty")
+			return
+		}
 		s.Execute()
 	}
 

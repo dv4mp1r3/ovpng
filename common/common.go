@@ -8,6 +8,8 @@ const (
 	RHelpStr        string = "openvpn config root path"
 	CreateClientKey string = "client-key"
 	CreateServerKey string = "server-key"
+	CaPwd           string = "CA password"
+	ServerPwd       string = "Server's password"
 )
 
 func NeedToShowUsage() bool {

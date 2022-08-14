@@ -2,7 +2,6 @@ package scenarios
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"os"
 	"os/exec"
@@ -19,6 +18,8 @@ type EasyRsaScenarioImpl struct {
 	args     []string
 	CertName string
 	CertType string
+	CaPwd    *string
+	CertPwd  *string
 }
 
 type CommandParams struct {
@@ -34,8 +35,7 @@ var (
 
 const (
 	ScenarioEasyRsaName string = "easyrsa"
-	caPwd               string = "CA password"
-	serverPwd           string = "Server's password"
+	exitErrorMsg        string = "The programm will be stopped"
 )
 
 func getEasyRsaPath() (path string, err error) {
@@ -44,6 +44,18 @@ func getEasyRsaPath() (path string, err error) {
 		return "", err
 	}
 	return path + "/easyrsa", nil
+}
+
+func (s *EasyRsaScenarioImpl) genCertArgsByType(pass string) []string {
+	buildType := "build-server-full"
+	if s.CertType == common.CreateClientKey {
+		buildType = "build-client-full"
+	}
+	args := []string{buildType, s.CertName}
+	if pass == "" {
+		args = append(args, "nopass")
+	}
+	return args
 }
 
 func executeStage(params CommandParams) bool {
@@ -94,15 +106,43 @@ func checkEnv() bool {
 	return true
 }
 
-func (s *EasyRsaScenarioImpl) Execute() {
-
-	cP := flag.String("cp", "", caPwd)
-	sP := flag.String("sp", "", serverPwd)
-
-	if s.CertName == "" {
-		fmt.Println("")
-		return
+func (s *EasyRsaScenarioImpl) genOnlyClientCertificate(ccPwd *string, easyRsaPath *string) {
+	buildClientFullArgs := s.genCertArgsByType(*ccPwd)
+	params := CommandParams{easyRsaPath, buildClientFullArgs, ccPwd}
+	if !executeStage(params) {
+		fmt.Println(exitErrorMsg)
 	}
+}
+
+func (s *EasyRsaScenarioImpl) setupPki(caPwd *string, srvPwd *string, easyRsaPath *string) {
+	buildCaArgs := []string{"build-ca"}
+	if *caPwd == "" {
+		buildCaArgs = append(buildCaArgs, "nopass")
+	}
+
+	buildServerFullArgs := s.genCertArgsByType(*srvPwd)
+
+	workDir, _ := os.Getwd()
+
+	stages := []CommandParams{
+		{easyRsaPath, []string{"init-pki"}, caPwd},
+		{&cpCmd, []string{"-r", workDir + "/easy-rsa/x509-types", workDir + "/pki"}, caPwd},
+		{&cpCmd, []string{workDir + "/easy-rsa/openssl-easyrsa.cnf", workDir + "/pki"}, caPwd},
+		{easyRsaPath, buildCaArgs, caPwd},
+		{easyRsaPath, []string{"gen-dh"}, caPwd},
+		{&openvpnCmd, []string{"--genkey", "--secret", workDir + "/pki/ta.key"}, caPwd},
+		{easyRsaPath, []string{"gen-crl"}, caPwd},
+		{easyRsaPath, buildServerFullArgs, caPwd},
+	}
+	for _, stage := range stages {
+		if !executeStage(stage) {
+			fmt.Println(exitErrorMsg)
+			return
+		}
+	}
+}
+
+func (s *EasyRsaScenarioImpl) Execute() {
 
 	if !checkEnv() {
 		return
@@ -115,45 +155,9 @@ func (s *EasyRsaScenarioImpl) Execute() {
 	}
 
 	if s.CertType == common.CreateServerKey {
-		buildCaArgs := []string{"build-ca"}
-		if *cP == "" {
-			buildCaArgs = append(buildCaArgs, "nopass")
-		}
-
-		buildServerFullArgs := []string{"build-server-full", s.CertName}
-		if *sP == "" {
-			buildServerFullArgs = append(buildServerFullArgs, "nopass")
-		}
-
-		workDir, _ := os.Getwd()
-
-		stages := []CommandParams{
-			{&easyRsaPath, []string{"init-pki"}, cP},
-			{&cpCmd, []string{"-r", workDir + "/easy-rsa/x509-types", workDir + "/pki"}, cP},
-			{&cpCmd, []string{workDir + "/easy-rsa/openssl-easyrsa.cnf", workDir + "/pki"}, cP},
-			{&easyRsaPath, buildCaArgs, cP},
-			{&easyRsaPath, []string{"gen-dh"}, cP},
-			{&openvpnCmd, []string{"--genkey", "--secret", workDir + "/pki/ta.key"}, cP},
-			{&easyRsaPath, []string{"gen-crl"}, cP},
-			{&easyRsaPath, buildServerFullArgs, cP},
-		}
-		for _, stage := range stages {
-			if !executeStage(stage) {
-				fmt.Println("The programm will be stopped")
-				return
-			}
-		}
-	}
-
-	if s.CertType == common.CreateClientKey {
-		buildClientFullArgs := []string{"build-client-full", s.CertName}
-		if *sP == "" {
-			buildClientFullArgs = append(buildClientFullArgs, "nopass")
-		}
-		params := CommandParams{&easyRsaPath, buildClientFullArgs, cP}
-		if !executeStage(params) {
-			fmt.Println("")
-		}
+		s.setupPki(s.CaPwd, s.CertPwd, &easyRsaPath)
+	} else if s.CertType == common.CreateClientKey {
+		s.genOnlyClientCertificate(s.CertPwd, &easyRsaPath)
 	}
 
 }
