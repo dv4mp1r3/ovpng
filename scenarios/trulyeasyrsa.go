@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/exec"
 	"time"
+
+	"github.com/dv4mp1r3/ovpngen/common"
 )
 
 type EasyRsaScenario interface {
@@ -14,7 +16,9 @@ type EasyRsaScenario interface {
 }
 
 type EasyRsaScenarioImpl struct {
-	args []string
+	args     []string
+	CertName string
+	CertType string
 }
 
 type CommandParams struct {
@@ -95,6 +99,11 @@ func (s *EasyRsaScenarioImpl) Execute() {
 	cP := flag.String("cp", "", caPwd)
 	sP := flag.String("sp", "", serverPwd)
 
+	if s.CertName == "" {
+		fmt.Println("")
+		return
+	}
+
 	if !checkEnv() {
 		return
 	}
@@ -105,32 +114,45 @@ func (s *EasyRsaScenarioImpl) Execute() {
 		return
 	}
 
-	buildCaArgs := []string{"build-ca"}
-	if *cP == "" {
-		buildCaArgs = append(buildCaArgs, "nopass")
+	if s.CertType == common.CreateServerKey {
+		buildCaArgs := []string{"build-ca"}
+		if *cP == "" {
+			buildCaArgs = append(buildCaArgs, "nopass")
+		}
+
+		buildServerFullArgs := []string{"build-server-full", s.CertName}
+		if *sP == "" {
+			buildServerFullArgs = append(buildServerFullArgs, "nopass")
+		}
+
+		workDir, _ := os.Getwd()
+
+		stages := []CommandParams{
+			{&easyRsaPath, []string{"init-pki"}, cP},
+			{&cpCmd, []string{"-r", workDir + "/easy-rsa/x509-types", workDir + "/pki"}, cP},
+			{&cpCmd, []string{workDir + "/easy-rsa/openssl-easyrsa.cnf", workDir + "/pki"}, cP},
+			{&easyRsaPath, buildCaArgs, cP},
+			{&easyRsaPath, []string{"gen-dh"}, cP},
+			{&openvpnCmd, []string{"--genkey", "--secret", workDir + "/pki/ta.key"}, cP},
+			{&easyRsaPath, []string{"gen-crl"}, cP},
+			{&easyRsaPath, buildServerFullArgs, cP},
+		}
+		for _, stage := range stages {
+			if !executeStage(stage) {
+				fmt.Println("The programm will be stopped")
+				return
+			}
+		}
 	}
 
-	buildServerFullArgs := []string{"build-server-full", "server"}
-	if *sP == "" {
-		buildServerFullArgs = append(buildServerFullArgs, "nopass")
-	}
-
-	workDir, _ := os.Getwd()
-
-	stages := []CommandParams{
-		{&easyRsaPath, []string{"init-pki"}, cP},
-		{&cpCmd, []string{"-r", workDir + "/easy-rsa/x509-types", workDir + "/pki"}, cP},
-		{&cpCmd, []string{workDir + "/easy-rsa/openssl-easyrsa.cnf", workDir + "/pki"}, cP},
-		{&easyRsaPath, buildCaArgs, cP},
-		{&easyRsaPath, []string{"gen-dh"}, cP},
-		{&openvpnCmd, []string{"--genkey", "--secret", workDir + "/pki/ta.key"}, cP},
-		{&easyRsaPath, []string{"gen-crl"}, cP},
-		{&easyRsaPath, buildServerFullArgs, cP},
-	}
-	for _, stage := range stages {
-		if !executeStage(stage) {
-			fmt.Println("The programm will be stopped")
-			return
+	if s.CertType == common.CreateClientKey {
+		buildClientFullArgs := []string{"build-client-full", s.CertName}
+		if *sP == "" {
+			buildClientFullArgs = append(buildClientFullArgs, "nopass")
+		}
+		params := CommandParams{&easyRsaPath, buildClientFullArgs, cP}
+		if !executeStage(params) {
+			fmt.Println("")
 		}
 	}
 

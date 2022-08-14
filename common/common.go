@@ -5,7 +5,9 @@ import (
 )
 
 const (
-	RHelpStr string = "openvpn config root path"
+	RHelpStr        string = "openvpn config root path"
+	CreateClientKey string = "client-key"
+	CreateServerKey string = "server-key"
 )
 
 func NeedToShowUsage() bool {

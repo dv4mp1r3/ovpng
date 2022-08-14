@@ -8,10 +8,24 @@ import (
 	"github.com/dv4mp1r3/ovpngen/scenarios"
 )
 
+const ()
+
 func main() {
 
 	scenario := flag.String("scn", "", "Scenario")
 	help := flag.Bool("h", false, "Show usage")
+	certType := flag.String(
+		"ct",
+		"",
+		fmt.Sprint(
+			"Certificate type (%s, %s)",
+			common.CreateServerKey,
+			common.CreateClientKey,
+		),
+	)
+	certName := flag.String("n", "", "Certificate name")
+
+	fmt.Println(fmt.Sprint("%s %s", certType, certName))
 
 	flag.Parse()
 	if len(*scenario) == 0 {
@@ -28,6 +42,8 @@ func main() {
 		s.Execute()
 	case scenarios.ScenarioEasyRsaName:
 		var s = new(scenarios.EasyRsaScenarioImpl)
+		s.CertName = *certName
+		s.CertType = *certType
 		s.Execute()
 	}
 
