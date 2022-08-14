@@ -4,6 +4,12 @@ import (
 	"os"
 )
 
+const (
+	RHelpStr        string = "openvpn config root path"
+	CreateClientKey string = "client-key"
+	CreateServerKey string = "server-key"
+)
+
 func NeedToShowUsage() bool {
 	for idx, arg := range os.Args {
 		if (arg == "-h" || arg == "--help") && idx%2 == 1 {
