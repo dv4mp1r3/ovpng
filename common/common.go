@@ -5,11 +5,17 @@ import (
 )
 
 const (
-	RHelpStr        string = "openvpn config root path"
-	CreateClientKey string = "client-key"
-	CreateServerKey string = "server-key"
-	CaPwd           string = "CA password"
-	ServerPwd       string = "Server's password"
+	RHelpStr           string = "openvpn config root path"
+	CreateClientKey    string = "client-key"
+	CreateServerKey    string = "server-key"
+	CaPwd              string = "CA password"
+	ServerPwd          string = "Server's password"
+	SHelpStr           string = "server's host"
+	PHelpStr           string = "server's port"
+	CertPathHelpStr    string = "user's .crt file (inside root)"
+	KeyPathHelpStr     string = "user's .key file (inside root)"
+	CAPathHelpStr      string = "CA path (inside root, ca.crt by default)"
+	TLSAuthPathHelpStr string = "TLS auth path (inside root, ta.key by default)"
 )
 
 func NeedToShowUsage() bool {

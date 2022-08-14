@@ -1,7 +1,6 @@
 package scenarios
 
 import (
-	"flag"
 	"fmt"
 	"path/filepath"
 
@@ -13,17 +12,18 @@ type Ovpngen interface {
 }
 
 type OvpngenImpl struct {
-	args []string
+	args        []string
+	RootDir     string
+	Host        string
+	Port        string
+	CertPath    string
+	KeyPath     string
+	CaPath      string
+	TlsAuthPath string
 }
 
 const (
-	SHelpStr           string = "server's host"
-	PHelpStr           string = "server's port"
-	CertPathHelpStr    string = "user's .crt file (inside root)"
-	KeyPathHelpStr     string = "user's .key file (inside root)"
-	CAPathHelpStr      string = "CA path (inside root, ca.crt by default)"
-	TLSAuthPathHelpStr string = "TLS auth path (inside root, ta.key by default)"
-	HelpStr            string = "Show usage"
+	HelpStr string = "Show usage"
 
 	ScenarioOvpnGenName string = "ovpngen"
 )
@@ -55,16 +55,7 @@ func (s *OvpngenImpl) Execute() {
 		return
 	}
 
-	root := flag.String("r", "", common.RHelpStr)
-	host := flag.String("s", "", SHelpStr)
-	port := flag.String("p", "", PHelpStr)
-	certPath := flag.String("c", "", CertPathHelpStr)
-	keyPath := flag.String("k", "", KeyPathHelpStr)
-	caPath := flag.String("ca", "ca.crt", CAPathHelpStr)
-	tlsAuthPath := flag.String("ta", "ta.key", TLSAuthPathHelpStr)
-
-	flag.Parse()
-	args := []string{*root, *host, *port, *certPath, *keyPath}
+	args := []string{s.RootDir, s.Host, s.Port, s.CertPath, s.KeyPath}
 	if !common.ValidateArgs(args) {
 		s.ShowUsage()
 		return
@@ -72,12 +63,12 @@ func (s *OvpngenImpl) Execute() {
 
 	fmt.Printf(
 		ovpnTemplate,
-		*host,
-		*port,
-		common.ReadFile(*root, *caPath),
-		common.ReadFile(*root, *certPath),
-		common.ReadFile(*root, *keyPath),
-		common.ReadFile(*root, *tlsAuthPath),
+		s.Host,
+		s.Port,
+		common.ReadFile(s.RootDir, s.CaPath),
+		common.ReadFile(s.RootDir, s.CertPath),
+		common.ReadFile(s.RootDir, s.KeyPath),
+		common.ReadFile(s.RootDir, s.TlsAuthPath),
 	)
 }
 
@@ -103,12 +94,12 @@ ovpngen -scn %s -r /etc/openvpn -c easy-rsa/pki/issued/user.crt -k easy-rsa/pki/
 		optionsTemplate,
 		filepath.Base(exe),
 		common.RHelpStr,
-		SHelpStr,
-		PHelpStr,
-		CertPathHelpStr,
-		KeyPathHelpStr,
-		CAPathHelpStr,
-		TLSAuthPathHelpStr,
+		common.SHelpStr,
+		common.PHelpStr,
+		common.CertPathHelpStr,
+		common.KeyPathHelpStr,
+		common.CAPathHelpStr,
+		common.TLSAuthPathHelpStr,
 		ScenarioOvpnGenName,
 	)
 }
