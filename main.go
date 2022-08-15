@@ -10,8 +10,12 @@ import (
 
 func main() {
 
+	//common args
 	scenario := flag.String("scn", "", "Scenario")
 	help := flag.Bool("h", false, "Show usage")
+	port := flag.String("p", "", common.PHelpStr)
+
+	//easyrsa args
 	certType := flag.String(
 		"ct",
 		"",
@@ -24,15 +28,16 @@ func main() {
 	certName := flag.String("n", "", "Certificate name")
 	cP := flag.String("cp", "", common.CaPwd)
 	sP := flag.String("sp", "", common.ServerPwd)
-	//===
+
+	//ovpngen args
 	root := flag.String("r", "", common.RHelpStr)
 	host := flag.String("s", "", common.SHelpStr)
-	port := flag.String("p", "", common.PHelpStr)
 	certPath := flag.String("c", "", common.CertPathHelpStr)
 	keyPath := flag.String("k", "", common.KeyPathHelpStr)
 	caPath := flag.String("ca", "ca.crt", common.CAPathHelpStr)
 	tlsAuthPath := flag.String("ta", "ta.key", common.TLSAuthPathHelpStr)
-	//==
+
+	//confgen args
 	addr := flag.String("a", "", "ip addr")
 	proto := flag.String("pr", "", "proto")
 
