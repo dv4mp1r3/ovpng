@@ -10,13 +10,12 @@ import (
 
 func main() {
 
-	//todo: change args
 	scenario := flag.String("scn", "", "Scenario")
 	help := flag.Bool("h", false, "Show usage")
 	certType := flag.String(
 		"ct",
 		"",
-		fmt.Sprint(
+		fmt.Sprintf(
 			"Certificate type (%s, %s)",
 			common.CreateServerKey,
 			common.CreateClientKey,
@@ -46,10 +45,6 @@ func main() {
 	switch *scenario {
 	case scenarios.ScenarioOvpnGenName:
 		var s = new(scenarios.OvpngenImpl)
-		if *help {
-			s.ShowUsage()
-			return
-		}
 		s.RootDir = *root
 		s.Host = *host
 		s.Port = *port
@@ -57,6 +52,10 @@ func main() {
 		s.KeyPath = *keyPath
 		s.CaPath = *caPath
 		s.TlsAuthPath = *tlsAuthPath
+		if *help || !s.Validate() {
+			s.ShowUsage()
+			return
+		}
 		s.Execute()
 	case scenarios.ScenarioEasyRsaName:
 		var s = new(scenarios.EasyRsaScenarioImpl)
@@ -64,8 +63,8 @@ func main() {
 		s.CertType = *certType
 		s.CaPwd = cP
 		s.CertPwd = sP
-		if s.CertName == "" {
-			fmt.Println("Certificate name can not be empty")
+		if *help || !s.Validate() {
+			s.ShowUsage()
 			return
 		}
 		s.Execute()
@@ -74,8 +73,9 @@ func main() {
 		s.Addr = *addr
 		s.Port = *port
 		s.Proto = *proto
-		if !s.Validate() {
-			fmt.Printf("Some of parameters (proto, port, addr) is empty.")
+		if *help || !s.Validate() {
+			s.ShowUsage()
+			return
 		}
 		s.Execute()
 	}

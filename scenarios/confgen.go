@@ -1,6 +1,11 @@
 package scenarios
 
-import "fmt"
+import (
+	"fmt"
+	"path/filepath"
+
+	"github.com/dv4mp1r3/ovpngen/common"
+)
 
 type ConfGenScenario interface {
 	Scenario
@@ -45,4 +50,29 @@ func (s *ConfGenScenarioImpl) Execute() {
 
 func (s *ConfGenScenarioImpl) Validate() bool {
 	return s.Addr != "" && s.Port != "" && s.Proto != ""
+}
+
+func (s *ConfGenScenarioImpl) ShowUsage() {
+	fmt.Println("Usage:")
+	exe := common.GetExecFileName()
+
+	optionsTemplate := `%s [options]
+
+Options:
+	-a %s
+	-pr %s
+	-p %s
+
+Example: 
+ovpngen -scn %s -a 127.0.0.1 -pr udp -p 443
+`
+
+	fmt.Printf(
+		optionsTemplate,
+		filepath.Base(exe),
+		"IP address",
+		"Protocol (tcp or udp)",
+		"Port",
+		ScenarioConfGen,
+	)
 }

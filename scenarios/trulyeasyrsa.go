@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 
 	"github.com/dv4mp1r3/ovpngen/common"
@@ -160,4 +161,38 @@ func (s *EasyRsaScenarioImpl) Execute() {
 		s.genOnlyClientCertificate(s.CertPwd, &easyRsaPath)
 	}
 
+}
+
+func (s *EasyRsaScenarioImpl) Validate() bool {
+	return s.CertName != "" ||
+		(s.CertType != common.CreateClientKey && s.CertType != common.CreateServerKey)
+
+}
+
+func (s *EasyRsaScenarioImpl) ShowUsage() {
+	fmt.Println("Usage:")
+	exe := common.GetExecFileName()
+
+	optionsTemplate := `%s [options]
+
+Options:
+	-ct %s
+	-n %s
+	-cp %s
+	-sp %s
+
+Example: 
+ovpngen -scn %s -ct %s -n certName -cp 1234 -sp 1234
+`
+
+	fmt.Printf(
+		optionsTemplate,
+		filepath.Base(exe),
+		fmt.Sprintf(common.CertTypeHelpStr, common.CreateClientKey, common.CreateServerKey),
+		common.CertNameHelpStr,
+		common.CaPwd,
+		common.ServerPwd,
+		ScenarioEasyRsaName,
+		common.CreateServerKey,
+	)
 }

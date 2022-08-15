@@ -103,3 +103,13 @@ ovpngen -scn %s -r /etc/openvpn -c easy-rsa/pki/issued/user.crt -k easy-rsa/pki/
 		ScenarioOvpnGenName,
 	)
 }
+
+func (s *OvpngenImpl) Validate() bool {
+	args := []string{s.RootDir, s.Host, s.Port, s.CertPath, s.KeyPath}
+	for _, arg := range args {
+		if arg == "" {
+			return false
+		}
+	}
+	return true
+}
