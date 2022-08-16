@@ -30,7 +30,6 @@ const (
 
 func (s *OvpngenImpl) Execute() {
 	ovpnTemplate := `client
-client
 dev tun
 proto udp
 remote %s %s
