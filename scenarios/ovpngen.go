@@ -30,26 +30,28 @@ const (
 
 func (s *OvpngenImpl) Execute() {
 	ovpnTemplate := `client
-	dev tun
-	proto udp
-	remote %s %s
-	nobind
-	persist-key
-	persist-tun
-	comp-lzo
-	<ca>
-	%s
-	</ca>
-	<cert>
-	%s
-	</cert>
-	<key>
-	%s
-	</key>
-	key-direction 1
-	<tls-auth>
-	%s
-	</tls-auth>`
+client
+dev tun
+proto udp
+remote %s %s
+verb 3
+cipher AES-256-CBC
+tls-client
+remote-cert-tls server
+key-direction 1
+redirect-gateway def1
+<ca>
+%s
+</ca>
+<cert>
+%s
+</cert>
+<key>
+%s
+</key>
+<tls-auth>
+%s
+</tls-auth>`
 	if common.NeedToShowUsage() {
 		s.ShowUsage()
 		return
