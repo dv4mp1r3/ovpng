@@ -30,7 +30,6 @@ func main() {
 	sP := flag.String("sp", "", common.ServerPwd)
 
 	//ovpngen args
-	root := flag.String("r", "", common.RHelpStr)
 	host := flag.String("s", "", common.SHelpStr)
 	certPath := flag.String("c", "", common.CertPathHelpStr)
 	keyPath := flag.String("k", "", common.KeyPathHelpStr)
@@ -50,7 +49,6 @@ func main() {
 	switch *scenario {
 	case scenarios.ScenarioOvpnGenName:
 		var s = new(scenarios.OvpngenImpl)
-		s.RootDir = *root
 		s.Host = *host
 		s.Port = *port
 		s.CertPath = *certPath

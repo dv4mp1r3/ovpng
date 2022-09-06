@@ -5,7 +5,6 @@ import (
 )
 
 const (
-	RHelpStr           string = "openvpn config root path"
 	CreateClientKey    string = "client-key"
 	CreateServerKey    string = "server-key"
 	CaPwd              string = "CA password"
@@ -38,8 +37,8 @@ func ValidateArgs(args []string) bool {
 	return true
 }
 
-func ReadFile(root string, path string) string {
-	data, err := os.ReadFile(root + string(os.PathSeparator) + path)
+func ReadFile(path string) string {
+	data, err := os.ReadFile(path)
 	checkFileErr(err)
 	return string(data)
 }

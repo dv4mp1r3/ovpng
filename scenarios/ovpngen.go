@@ -13,7 +13,6 @@ type Ovpngen interface {
 
 type OvpngenImpl struct {
 	args        []string
-	RootDir     string
 	Host        string
 	Port        string
 	CertPath    string
@@ -26,6 +25,7 @@ const (
 	HelpStr string = "Show usage"
 
 	ScenarioOvpnGenName string = "ovpngen"
+	pkiDir              string = "/etc/openvpn/easy-rsa/pki"
 )
 
 func (s *OvpngenImpl) Execute() {
@@ -56,7 +56,7 @@ redirect-gateway def1
 		return
 	}
 
-	args := []string{s.RootDir, s.Host, s.Port, s.CertPath, s.KeyPath}
+	args := []string{s.Host, s.Port, s.CertPath, s.KeyPath}
 	if !common.ValidateArgs(args) {
 		s.ShowUsage()
 		return
@@ -66,10 +66,10 @@ redirect-gateway def1
 		ovpnTemplate,
 		s.Host,
 		s.Port,
-		common.ReadFile(s.RootDir, s.CaPath),
-		common.ReadFile(s.RootDir, s.CertPath),
-		common.ReadFile(s.RootDir, s.KeyPath),
-		common.ReadFile(s.RootDir, s.TlsAuthPath),
+		common.ReadFile(s.CaPath),
+		common.ReadFile(s.CertPath),
+		common.ReadFile(s.KeyPath),
+		common.ReadFile(s.TlsAuthPath),
 	)
 }
 
@@ -89,12 +89,11 @@ Options:
 	-ta %s
 
 Example: 
-ovpngen -scn %s -r /etc/openvpn -c easy-rsa/pki/issued/user.crt -k easy-rsa/pki/private/user.key -s 127.0.0.1 -p 1194
+ovpngen -scn %s -c %s/issued/user.crt -k %s/private/user.key -s 127.0.0.1 -p 1194
 `
 	fmt.Printf(
 		optionsTemplate,
 		filepath.Base(exe),
-		common.RHelpStr,
 		common.SHelpStr,
 		common.PHelpStr,
 		common.CertPathHelpStr,
@@ -102,11 +101,13 @@ ovpngen -scn %s -r /etc/openvpn -c easy-rsa/pki/issued/user.crt -k easy-rsa/pki/
 		common.CAPathHelpStr,
 		common.TLSAuthPathHelpStr,
 		ScenarioOvpnGenName,
+		pkiDir,
+		pkiDir,
 	)
 }
 
 func (s *OvpngenImpl) Validate() bool {
-	args := []string{s.RootDir, s.Host, s.Port, s.CertPath, s.KeyPath}
+	args := []string{s.Host, s.Port, s.CertPath, s.KeyPath}
 	for _, arg := range args {
 		if arg == "" {
 			return false
